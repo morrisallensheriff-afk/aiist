@@ -260,7 +260,7 @@ table.t input.sc:disabled{background:var(--surface2);color:var(--muted)}
 <script>
 'use strict';
 /* ================= Store ================= */
-const COLLS = ['students', 'teachers', 'courses', 'records', 'sections', 'enrollments', 'sessions', 'ledger', 'evals', 'warnings', 'warnState', 'interventions', 'tasks', 'decisions', 'announcements', 'events', 'library', 'news', 'notes', 'feedback', 'alumni', 'documents', 'budget', 'payroll', 'requests', 'outcomeAssess', 'reviews', 'programOutcomes', 'history', 'audit', 'wallpapers', 'accounts', 'achievements'];
+const COLLS = ['students', 'teachers', 'courses', 'records', 'sections', 'enrollments', 'sessions', 'ledger', 'evals', 'warnings', 'warnState', 'interventions', 'tasks', 'decisions', 'announcements', 'events', 'library', 'news', 'notes', 'feedback', 'alumni', 'documents', 'budget', 'payroll', 'requests', 'outcomeAssess', 'reviews', 'programOutcomes', 'history', 'audit', 'wallpapers', 'accounts', 'achievements', 'cases'];
 const S = { settings: null }; COLLS.forEach(c => S[c] = []);
 const HOSTED = !!window.AIIST_CFG;
 let DB = null, USERCAP = null, DL = null, ASSETS = null, loaded = false, canWrite = true, localMode = false, stale = false;
@@ -1387,7 +1387,7 @@ let loginErr = '', loginUser = '', IS_OWNER = false, lastActive = Date.now(), la
 const artSide = () => { const s = st(); return '<div class="art" style="' + wpStyle('khatam') + '"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,20,44,.35),rgba(10,20,44,.85))"></div><div style="position:relative"><p class="mt0">' + esc(s.inst.acr) + ' \u2022 ' + esc(s.inst.name) + '</p><h1>' + esc(s.dept.name) + '</h1><p>Students, courses, grades, attendance and the department\u2019s daily work in one place.</p></div></div>'; };
 function loginScreen() {
   const s = st();
-  return '<div class="login">' + artSide() + '<div class="pick"><h2>Sign in</h2><p class="muted mt0">Enter the username and password given to you by the Department Head.</p><form data-submit="login" autocomplete="on"><div class="form" style="grid-template-columns:1fr"><div class="field"><label for="lu">Username</label><input id="lu" name="u" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required value="' + esc(loginUser) + '"></div><div class="field"><label for="lp">Password</label><input id="lp" name="p" type="password" autocomplete="current-password" required></div>' + (loginErr ? '<div class="note bad" role="alert">' + esc(loginErr) + '</div>' : '') + '<button class="btn primary">Sign in</button></div></form><p class="small muted">Forgotten your username or password? Ask the Department Head, who can look up your username and give you a new password.</p>' + (IS_OWNER ? '<p class="small"><button class="link small" data-a="ownerReset">Page owner: reset the Department Head login</button></p>' : '') + '<a class="btn" href="' + esc(s.inst.website) + '" target="_blank" rel="noopener">' + ic('globe') + ' ' + esc(s.inst.acr) + ' website</a></div></div>';
+  return '<div class="login">' + artSide() + '<div class="pick"><h2>Sign in</h2><p class="muted mt0">Enter the username and password given to you by the Department Head.</p><form data-submit="login" autocomplete="on"><div class="form" style="grid-template-columns:1fr"><div class="field"><label for="lu">Username</label><input id="lu" name="u" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required value="' + esc(loginUser) + '"></div><div class="field"><label for="lp">Password</label><input id="lp" name="p" type="password" autocomplete="current-password" required></div>' + (mfaStep ? '<div class="field"><label for="lc">Authenticator code</label><input id="lc" name="c" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></div>' : '') + (loginErr ? '<div class="note bad" role="alert">' + esc(loginErr) + '</div>' : '') + '<button class="btn primary">Sign in</button></div></form><p class="small muted">Forgotten your username or password? Ask the Department Head, who can look up your username and give you a new password.</p>' + (IS_OWNER ? '<p class="small"><button class="link small" data-a="ownerReset">Page owner: reset the Department Head login</button></p>' : '') + '<a class="btn" href="' + esc(s.inst.website) + '" target="_blank" rel="noopener">' + ic('globe') + ' ' + esc(s.inst.acr) + ' website</a></div></div>';
 }
 ACT.login = form => {
   const u = form.u.value.trim(), p = form.p.value, a = acctByUser(u); loginUser = u; const fail = m => { loginErr = m; render(); const el = $('#lp'); if (el) el.focus(); };
@@ -1401,7 +1401,7 @@ ACT.login = form => {
 ACT.signout = () => { if (sess) log('Signed out', (myAcct() || {}).username || ''); closeModal(); setSess(null); };
 ACT.viewAs = d => { const a = myAcct(); if (a && a.role === 'director') setSess({ aid: a.id, k: sess.k, role: d.role, pid: d.id, from: 'director' }); };
 ACT.backDirector = () => { const a = myAcct(); if (a) setSess({ aid: a.id, k: sess.k, role: 'director', pid: '' }); };
-const pwProblem = (a, p1, p2) => p1.length < 6 ? 'Choose a password of at least 6 characters.' : p1 !== p2 ? 'The two passwords do not match.' : p1.toLowerCase() === String(a.username).toLowerCase() ? 'Your password cannot be the same as your username.' : pwHash(p1, a.salt) === a.hash ? 'Choose a password different from the one you were given.' : '';
+const pwProblem = (a, p1, p2) => p1.length < 8 ? 'Choose a password of at least 8 characters.' : p1 !== p2 ? 'The two passwords do not match.' : p1.toLowerCase() === String(a.username).toLowerCase() ? 'Your password cannot be the same as your username.' : pwHash(p1, a.salt) === a.hash ? 'Choose a password different from the one you were given.' : '';
 function pwScreen() { const a = myAcct(); return '<div class="login">' + artSide() + '<div class="pick"><h2>Choose your own password</h2><p class="muted mt0">Welcome, ' + esc(who()) + '. The password you were given was temporary. Choose a new one that only you know. Your username stays <b>' + esc(a.username) + '</b>.</p><form data-submit="pwFirst"><div class="form" style="grid-template-columns:1fr"><div class="field"><label for="np1">New password</label><input id="np1" name="p1" type="password" autocomplete="new-password" required minlength="6"></div><div class="field"><label for="np2">Type it again</label><input id="np2" name="p2" type="password" autocomplete="new-password" required></div>' + (loginErr ? '<div class="note bad" role="alert">' + esc(loginErr) + '</div>' : '') + '<div class="row"><button class="btn primary">Save password and continue</button><button type="button" class="btn" data-a="signout">Sign out</button></div></div></form></div></div>'; }
 function setOwnPw(a, pw) { a.salt = newSalt(); a.hash = pwHash(pw, a.salt); a.mustChange = false; save('accounts'); sess.k = a.hash.slice(0, 10); try { localStorage.setItem('aiist:sess', JSON.stringify(sess)); } catch (e) { } log('Changed own password', a.username); }
 ACT.pwFirst = form => { const a = myAcct(), err = pwProblem(a, form.p1.value, form.p2.value); if (err) { loginErr = err; render(); return; } loginErr = ''; setOwnPw(a, form.p1.value); toast('Password saved'); render(); };
@@ -1978,6 +1978,113 @@ D.home = () => {
   const p = panel('Achievements and donations', (recent.length ? '<ul class="list">' + recent.map(a => '<li><span class="dotc ' + (a.type === 'Donation' ? 'warn' : 'info') + '"></span><div class="grow"><div class="t1">' + esc(a.title) + sampleTag(a) + '</div><div class="t2">' + esc(a.type) + (a.amount ? ', ' + money(a.amount) : '') + (a.donor ? ', ' + esc(a.donor) : '') + ', ' + fdate(a.date) + '</div></div></li>').join('') + '</ul>' : empty('Nothing recorded yet', 'Add donations, achievements and events from the Achievements page.')) + '<div class="small muted" style="padding:.6rem 1rem 0">Total donations: ' + money(dons) + '</div>', go('achievements', 'All'), true);
   return _homeBefore4().replace('<div class="grid g2 mb">', '<div class="mb">' + p + '</div><div class="grid g2 mb">');
 };
+
+/* ===== Director action centre (added on the home page) ===== */
+{ const _homeBeforeActions = D.home;
+  D.home = () => {
+    let n = { overdue: 0, risk: 0, feedback: 0, requests: 0 };
+    try {
+      n.overdue = L.sections.map(s => secCalc(s.id)).filter(x => x.overdue).length;
+      n.risk = atRiskIds().length;
+      n.feedback = (L.feedback || []).filter(f => f.status === 'New').length;
+      n.requests = (L.requests || []).filter(r => r.status === 'Pending').length;
+    } catch (e) { }
+    const bar = '<section class="panel mb"><header><h3>Action centre</h3><span class="small muted">Items that need your attention today</span></header><div class="body"><div class="stats">'
+      + stat('Overdue marks', n.overdue, 'sections past the deadline', n.overdue ? 'warn' : 'ok')
+      + stat('At-risk students', n.risk, 'open high-severity warnings', n.risk ? 'warn' : 'ok')
+      + stat('New feedback', n.feedback, 'waiting for a response', n.feedback ? 'gold' : 'ok')
+      + stat('Pending requests', n.requests, 'from students', n.requests ? 'gold' : 'ok')
+      + '</div><div class="row mt" style="gap:.4rem;flex-wrap:wrap">'
+      + go('warnings', 'Review warnings') + go('feedback', 'Open feedback') + go('evaluations', 'Evaluations') + '</div></div></section>';
+    return bar + _homeBeforeActions();
+  };
+}
+/* ===== Build 3: appeals and advising, two-step sign-in, email sending ===== */
+let mfaStep = false, mfaSecretB32 = '';
+const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function hexToB32(hex) { let bits = '', out = ''; for (const h of String(hex).match(/../g) || []) bits += parseInt(h, 16).toString(2).padStart(8, '0'); for (let i = 0; i < bits.length; i += 5) out += B32[parseInt(bits.slice(i, i + 5).padEnd(5, '0'), 2)]; return out; }
+
+/* --- Appeals and advising (new collection "cases") --- */
+PG.director.cases = () => {
+  const list = (L.cases || []).slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const open = list.filter(c => (c.status || 'Open') === 'Open').length;
+  const body = table([
+    { h: 'Date', f: c => fdate(c.date) },
+    { h: 'Student', f: c => stuLink(byId('students', c.studentId)) },
+    { h: 'Type', f: c => esc(c.type) + (c.course ? '<div class="small muted">' + esc(c.course) + '</div>' : '') },
+    { h: 'Request', f: c => esc(c.reason || '') },
+    { h: 'Status', f: c => esc(c.status || 'Open') },
+    { h: '', f: c => '<button class="btn sm" data-a="caseRespond" data-id="' + esc(c.id) + '">Respond</button>' }
+  ], list);
+  return head('Appeals and advising', open + ' open request' + (open === 1 ? '' : 's'), '') +
+    '<section class="panel mt"><div class="body flush">' + (list.length ? body : empty('No requests yet', 'Students can ask for a grade appeal or an advising appointment from their portal.')) + '</div></section>';
+};
+ACT.caseRespond = d => {
+  const c = byId('cases', d.id); if (!c) return;
+  openForm({ title: 'Respond: ' + c.type, intro: 'Your response appears in the student’s portal.', fields: [
+    { k: 'status', label: 'Status', type: 'select', options: ['Open', 'In review', 'Approved', 'Declined', 'Closed'], blank: false },
+    { k: 'response', label: 'Response to the student', type: 'textarea', rows: 5, required: true, full: true },
+    { k: 'when', label: 'Appointment date and time (advising)', full: true }
+  ], values: { status: c.status || 'Open', response: c.response || '', when: c.when || '' },
+  onSave: v => { upd('cases', c.id, { status: v.status, response: v.response, when: v.when || '', decidedBy: who(), decidedAt: todayISO() }); log('Responded to ' + String(c.type).toLowerCase(), (byId('students', c.studentId) || {}).name, '', v.status); toast('Response saved.'); } });
+};
+PG.student.cases = () => {
+  const me = meS(), list = (L.cases || []).filter(c => c.studentId === me.id).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const body = list.length ? '<ul class="list">' + list.map(c => '<li><div class="grow"><div class="t1">' + esc(c.type) + (c.course ? ' • ' + esc(c.course) : '') + '</div><div class="t2">' + fdate(c.date) + ' • ' + esc(c.status || 'Open') + '</div>' + (c.response ? '<div class="small mt0"><b>Response:</b> ' + esc(c.response) + (c.when ? ' (' + esc(c.when) + ')' : '') + '</div>' : '') + '</div></li>').join('') + '</ul>'
+    : empty('No requests yet', 'Use the button above to ask for a grade appeal or an advising appointment.');
+  return head('Appeals and advising', 'Ask about a grade, or book time with your advisor.', '<button class="btn primary" data-a="caseNew">New request</button>') + '<section class="panel"><div class="body">' + body + '</div></section>';
+};
+ACT.caseNew = () => openForm({ title: 'New request', intro: 'The department will reply in your portal.', fields: [
+  { k: 'type', label: 'Type', type: 'select', options: ['Grade appeal', 'Advising appointment'], blank: false },
+  { k: 'course', label: 'Course code (for a grade appeal)' },
+  { k: 'reason', label: 'Reason or question', type: 'textarea', rows: 5, required: true, full: true }],
+  onSave: v => { const me = meS(); add('cases', { studentId: me.id, type: v.type, course: v.course || '', reason: v.reason, status: 'Open', date: todayISO(), response: '', when: '' }); log('Student request', v.type, '', ''); toast('Request sent.'); } });
+NAV.director[3][1].push(['cases', 'Appeals and advising', 'msg']);
+NAV.student[0][1].push(['cases', 'Appeals and advising', 'msg']);
+
+/* --- Two-step sign-in for the Department Head (authenticator app codes) --- */
+function mfaPanel() {
+  if (ME && ME.mfa) return panel('Two-step sign-in', '<p class="small muted">On. Sign-in also asks for a code from your authenticator app.</p><form data-submit="mfaDisable" class="row" style="gap:.5rem;flex-wrap:wrap"><input name="code" class="inp" inputmode="numeric" maxlength="6" placeholder="Current code" required><button class="btn">Turn off</button></form>');
+  if (mfaSecretB32) return panel('Two-step sign-in', '<p class="small">In Google Authenticator or Microsoft Authenticator, choose “Enter a setup key”, name it AIIST Islamic Studies, and enter this key:</p><p><code style="font-size:1.05rem;letter-spacing:.08em;word-break:break-all">' + esc(mfaSecretB32) + '</code></p><form data-submit="mfaEnable" class="row" style="gap:.5rem;flex-wrap:wrap"><input name="code" class="inp" inputmode="numeric" maxlength="6" placeholder="6-digit code" required><button class="btn primary">Turn on</button></form>');
+  return panel('Two-step sign-in', '<p class="small muted">Recommended for the Department Head. Sign-in will also ask for a code from an authenticator app on your phone.</p><button class="btn" data-a="mfaStart">Set up two-step sign-in</button>');
+}
+const _profileBeforeMfa = PG.director.profile;
+PG.director.profile = () => _profileBeforeMfa() + mfaPanel();
+ACT.mfaStart = async () => {
+  const r = await api('aiist_mfa', { t: TOKEN, op: 'start', code: '' });
+  if (!r.secret) { toast(r.error === 'on' ? 'Two-step sign-in is already on.' : 'Could not start set-up. Try again.'); return; }
+  mfaSecretB32 = hexToB32(r.secret); render();
+};
+ACT.mfaEnable = async form => {
+  const r = await api('aiist_mfa', { t: TOKEN, op: 'enable', code: form.code.value.trim() });
+  if (r.ok) { ME.mfa = true; mfaSecretB32 = ''; toast('Two-step sign-in is on.'); } else toast(r.error === 'code' ? 'That code is not correct. Use the newest code in your app.' : 'Could not turn it on. Start again.');
+  render();
+};
+ACT.mfaDisable = async form => {
+  const r = await api('aiist_mfa', { t: TOKEN, op: 'disable', code: form.code.value.trim() });
+  if (r.ok) { ME.mfa = false; toast('Two-step sign-in is off.'); } else toast('That code is not correct.');
+  render();
+};
+
+/* --- Email sending through the send-email function (Resend, Brevo or Amazon SES) --- */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+async function sendMailNow(o) {
+  const base = String(CFG.url || '').replace(/\/+$/, ''), h = { 'Content-Type': 'application/json' };
+  if (CFG.key) { h.apikey = CFG.key; if (/^eyJ/.test(CFG.key)) h.Authorization = 'Bearer ' + CFG.key; }
+  let r;
+  try {
+    const res = await fetch(base + '/functions/v1/send-email', { method: 'POST', headers: h, body: JSON.stringify({ t: TOKEN, subject: o.subject, body: o.body, recipients: o.recipients }) });
+    r = res.status === 404 ? { error: 'notdeployed' } : await res.json().catch(() => ({ error: 'notdeployed' }));
+  } catch (e) { r = { error: 'network' }; }
+  if (r.ok) { toast('Email sent to ' + r.sent + ' student(s)' + (r.failed ? '. ' + r.failed + ' could not be delivered.' : '.')); return; }
+  if (r.error === 'notdeployed' || r.error === 'network') {
+    toast('The email service is not connected yet. Opening your email app instead.');
+    location.href = 'mailto:?bcc=' + encodeURIComponent(o.recipients.join(',')) + '&subject=' + encodeURIComponent(o.subject) + '&body=' + encodeURIComponent(o.body);
+    return;
+  }
+  toast({ auth: 'Your session has ended. Sign in again.', provider: 'The email provider is not set up yet. Ask the system administrator to add its key.', forbidden: 'Only the Department Head can send email.', toomany: 'Send to 300 people or fewer at a time.' }[r.error] || 'The email could not be sent.');
+}
+
 /* ================= Hosted mode: the department's own database (overrides the Claude-page storage) ================= */
 const CFG = window.AIIST_CFG || {};
 let TOKEN = '', REV = 0, ME = null, SYNC = {}, polling = false, bootMsg = '', verifyRes = null;
@@ -2058,24 +2165,25 @@ async function boot() {
   if (TOKEN) { await pull(true); if (!ME) { TOKEN = ''; try { localStorage.removeItem('aiist:tok'); } catch (e) { } } }
   loaded = true; render();
 }
-const LOGIN_ERR = { bad: 'The username or password is not correct.', off: 'This login has been switched off. Please see the Department Head.', locked: 'Too many wrong attempts. Wait five minutes, or ask the Department Head to reset your password.', network: 'No internet connection. Check your connection and try again.' };
+const LOGIN_ERR = { mfacode: 'That code is not correct. Codes change every 30 seconds, so use the newest one.', bad: 'The username or password is not correct.', off: 'This login has been switched off. Please see the Department Head.', locked: 'Too many wrong attempts. Wait five minutes, or ask the Department Head to reset your password.', network: 'No internet connection. Check your connection and try again.' };
 ACT.login = async form => {
-  const u = form.u.value.trim(), p = form.p.value, btn = form.querySelector('button.primary'); loginUser = u; if (btn) { btn.disabled = true; btn.textContent = 'Signing in\u2026'; }
-  const r = await api('aiist_login', { u, p });
+  const u = form.u.value.trim(), p = form.p.value, c = form.c ? form.c.value.trim() : '', btn = form.querySelector('button.primary'); loginUser = u; if (btn) { btn.disabled = true; btn.textContent = 'Signing in\u2026'; }
+  const r = await api('aiist_login', { u, p, c });
+  if (!r.token && r.error === 'mfa') { mfaStep = true; loginErr = 'Enter the six-digit code from your authenticator app.'; render(); const el0 = $('#lc'); if (el0) el0.focus(); return; }
   if (!r.token) { loginErr = LOGIN_ERR[r.error] || (r.error === 'nosetup' ? 'The database has not been set up yet. Run the setup script in the SQL Editor, then try again.' : r.error === 'key' ? 'The database did not accept this page\u2019s key.' : '') || 'The system could not be reached. Try again in a moment.'; render(); const el = $('#lp'); if (el) el.focus(); return; }
-  TOKEN = r.token; ME = r.me; try { localStorage.setItem('aiist:tok', TOKEN); } catch (e) { }
+  mfaStep = false; TOKEN = r.token; ME = r.me; try { localStorage.setItem('aiist:tok', TOKEN); } catch (e) { }
   loginErr = ''; loginUser = ''; lastActive = Date.now(); loaded = false; render(); await pull(true); loaded = true; sess = { aid: ME.id, role: ME.role, pid: ME.pid }; ui = { page: 'home', f: {} }; render();
 };
 ACT.signout = async () => { const t = TOKEN; endSession(''); if (t) api('aiist_logout', { t }); };
 ACT.ownerReset = () => { };
 ACT.pwFirst = async form => {
-  const err = form.p1.value.length < 6 ? 'Choose a password of at least 6 characters.' : form.p1.value !== form.p2.value ? 'The two passwords do not match.' : form.p1.value.toLowerCase() === ME.username.toLowerCase() ? 'Your password cannot be the same as your username.' : '';
+  const err = form.p1.value.length < 8 ? 'Choose a password of at least 8 characters.' : form.p1.value !== form.p2.value ? 'The two passwords do not match.' : form.p1.value.toLowerCase() === ME.username.toLowerCase() ? 'Your password cannot be the same as your username.' : '';
   if (err) { loginErr = err; render(); return; }
   const r = await api('aiist_password', { t: TOKEN, cur: '', nw: form.p1.value });
-  if (r.error) { loginErr = r.error === 'weak' ? 'Choose a password different from the one you were given, at least 6 characters long.' : 'The password could not be saved. Try again.'; render(); return; }
+  if (r.error) { loginErr = r.error === 'weak' ? 'Choose a password different from the one you were given, at least 8 characters long.' : 'The password could not be saved. Try again.'; render(); return; }
   loginErr = ''; ME.mustChange = false; await pull(false); toast('Password saved'); render();
 };
-ACT.pwChange = () => openForm({ title: 'Change my password', fields: [{ k: 'cur', label: 'Current password', type: 'password', required: true, full: true }, { k: 'p1', label: 'New password', type: 'password', required: true }, { k: 'p2', label: 'New password again', type: 'password', required: true }], values: {}, saveLabel: 'Change password', validate: v => v.p1.length < 6 ? 'Choose a password of at least 6 characters.' : v.p1 !== v.p2 ? 'The two passwords do not match.' : v.p1 === v.cur ? 'Choose a password different from your current one.' : '', onSave: v => { api('aiist_password', { t: TOKEN, cur: v.cur, nw: v.p1 }).then(r => toast(r.error === 'wrong' ? 'Your current password is not correct. Nothing was changed.' : r.error ? 'The password could not be changed. Choose a different one.' : 'Password changed')); } });
+ACT.pwChange = () => openForm({ title: 'Change my password', fields: [{ k: 'cur', label: 'Current password', type: 'password', required: true, full: true }, { k: 'p1', label: 'New password', type: 'password', required: true }, { k: 'p2', label: 'New password again', type: 'password', required: true }], values: {}, saveLabel: 'Change password', validate: v => v.p1.length < 8 ? 'Choose a password of at least 8 characters.' : v.p1 !== v.p2 ? 'The two passwords do not match.' : v.p1 === v.cur ? 'Choose a password different from your current one.' : '', onSave: v => { api('aiist_password', { t: TOKEN, cur: v.cur, nw: v.p1 }).then(r => toast(r.error === 'wrong' ? 'Your current password is not correct. Nothing was changed.' : r.error ? 'The password could not be changed. Choose a different one.' : 'Password changed')); } });
 async function acctCall(op, arg) { const r = await api('aiist_acct', { t: TOKEN, op, arg }); if (r.error) { toast({ taken: 'Someone else already has that username.', badname: 'Use 3 to 30 letters, numbers, dots or dashes, with no spaces.', network: 'No connection. Try again.' }[r.error] || 'That could not be done. Try again.'); return null; } await pull(false); render(); return r; }
 const credsFrom = list => list.map(c => ({ name: (c.role === 'director' ? st().director.name : (byId(c.role === 'teacher' ? 'teachers' : 'students', c.pid) || {}).name) || '', role: ROLE_LABEL[c.role], username: c.username, pw: c.pw }));
 const acctItem = r => ({ role: r.role, pid: r.pid, username: suggestUser(r.role, byId(r.role === 'teacher' ? 'teachers' : 'students', r.pid)) });
@@ -2192,6 +2300,26 @@ ACT.sendMail = () => {
       log('Sent a message', v.subject, '', picked.length + ' students');
       toast('Posted to the student portal' + (mails.length ? '. Opening your email app for ' + mails.length + ' address(es).' : '. None of these students has an email address on file.'));
       if (mails.length) location.href = 'mailto:?bcc=' + encodeURIComponent(mails.join(',')) + '&subject=' + encodeURIComponent(v.subject) + '&body=' + encodeURIComponent(v.body);
+    } });
+};
+ACT.sendMail = () => {
+  openForm({ title: 'Compose message', intro: 'The message appears in each student’s portal, and is emailed to students who have a valid email address on file. Each student receives their own copy, so no addresses are shown to others.', wide: true,
+    fields: [
+      { k: 'mode', label: 'Send to', type: 'select', options: ['One student', 'Selected students', 'All students'], blank: false },
+      { k: 'toStudents', label: 'Students (for One student or Selected students)', type: 'multi', options: stuOpts() },
+      { k: 'channel', label: 'Deliver by', type: 'select', options: ['Portal and email', 'Portal only', 'Email only'], blank: false },
+      { k: 'subject', label: 'Subject', required: true, full: true },
+      { k: 'body', label: 'Message', type: 'textarea', rows: 6, required: true, full: true }
+    ], values: { mode: 'Selected students', channel: 'Portal and email' },
+    onSave: v => {
+      const picked = v.mode === 'All students' ? L.students.map(x => x.id) : v.mode === 'One student' ? (v.toStudents || []).slice(0, 1) : (v.toStudents || []);
+      if (!picked.length) { toast('Choose at least one student.'); return; }
+      const mails = [...new Set(picked.map(id => String((byId('students', id) || {}).email || '').trim().toLowerCase()).filter(e => EMAIL_RE.test(e)))];
+      if (v.channel !== 'Email only') add('announcements', { title: v.subject, body: v.body, audience: v.mode === 'All students' ? 'All students' : 'Selected students', toStudents: picked, date: todayISO(), author: st().director.name });
+      log('Sent a message', v.subject, '', picked.length + ' students, ' + v.channel);
+      if (v.channel === 'Portal only') { toast('Posted to the student portal.'); return; }
+      if (!mails.length) { toast('None of these students has a valid email address on file.'); return; }
+      sendMailNow({ subject: v.subject, body: v.body, recipients: mails });
     } });
 };
 </script>
