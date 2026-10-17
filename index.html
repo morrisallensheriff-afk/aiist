@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#1f5f4a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="AIIST Islamic"><link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
@@ -937,7 +938,7 @@ D.analytics = () => {
 
 /* ---------- Students ---------- */
 const STU_FIELDS = [{ k: 'name', label: 'Full name', required: true }, { k: 'sid', label: 'Student ID', required: true }, { k: 'program', label: 'Program' }, { k: 'degree', label: 'Degree' }, { k: 'year', label: 'Current level (year)', type: 'select', options: [[1, 'Year 1 (Freshman)'], [2, 'Year 2 (Sophomore)'], [3, 'Year 3'], [4, 'Year 4']], blank: false }, { k: 'sem', label: 'Current semester', type: 'select', options: [[1, 'Semester I'], [2, 'Semester II']], blank: false },
-  { k: 'admitted', label: 'Admission date', placeholder: 'YYYY-MM-DD' }, { k: 'status', label: 'Academic status', type: 'select', options: ['Active', 'Suspended', 'Withdrawn', 'Dropped out', 'Graduated'], blank: false }, { k: 'isNew', label: 'New student this semester (receives the new-student scholarship)', type: 'checkbox', full: true },
+  { k: 'admitted', label: 'Admission date', placeholder: 'YYYY-MM-DD' }, { k: 'cohort', label: 'Cohort (students with the same label take the same class, teacher, day and time for each course; leave blank to use the year group)', placeholder: 'e.g. A', full: true }, { k: 'status', label: 'Academic status', type: 'select', options: ['Active', 'Suspended', 'Withdrawn', 'Dropped out', 'Graduated'], blank: false }, { k: 'isNew', label: 'New student this semester (receives the new-student scholarship)', type: 'checkbox', full: true },
   { k: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female'] }, { k: 'dob', label: 'Date of birth', type: 'date' }, { k: 'phone', label: 'Contact number' }, { k: 'email', label: 'Email', type: 'email' }, { k: 'address', label: 'Address', full: true }, { k: 'emergency', label: 'Emergency contact', full: true }, { k: 'expectedGrad', label: 'Expected graduation' }, { k: 'photoId', label: 'Photograph', type: 'file', accept: 'image/*' }];
 const avatar = (p, lg) => p && p.photoId ? '<img class="avatar' + (lg ? ' lg' : '') + '" src="' + esc(String(p.photoId).startsWith('data:') ? p.photoId : '/_blob/' + p.photoId) + '" alt="">' : '<span class="avatar' + (lg ? ' lg' : '') + '">' + esc((p && p.name || '?').split(' ').map(x => x[0]).slice(0, 2).join('')) + '</span>';
 D.students = () => {
@@ -994,7 +995,7 @@ D.student = () => {
     body = (c.ungraded ? '<div class="note mb">' + c.ungraded + ' completed course' + (c.ungraded > 1 ? 's have' : ' has') + ' no grade on file. They count as credits earned but not towards GPA until a grade is entered.</div>' : '') + panel('Academic record', table([{ h: 'Semester', f: r => esc(r.term) }, { h: 'Code', f: r => cLink(r.code) }, { h: 'Course', f: r => esc(recTitle(r)) }, { h: 'Credits', num: true, f: r => r.credits + (r.formCredits && r.formCredits !== r.credits ? '<div class="small muted">form says ' + r.formCredits + '</div>' : '') }, { h: 'Score', num: true, f: r => r.score === '' || r.score == null ? '' : r.score }, { h: 'Grade', f: r => r.grade ? badge(r.grade, passes(r.grade) ? 'ok' : 'bad') : '<span class="muted">Not on file</span>' }, { h: 'Points', num: true, f: r => r.grade ? fix(gp(r.grade) * r.credits) : '' }, { h: 'Confirmation status', f: r => esc(r.confirmedBy || '') }, { h: '', cls: 'right', f: r => '<button class="btn sm" data-a="recEdit" data-id="' + r.id + '">Edit</button>' }], rs, empty('No completed courses recorded')), '<button class="btn primary sm" data-a="recAdd" data-id="' + s.id + '">Add completed course</button>', true);
   } else if (tab === 'plan') body = panel('Course plan against the curriculum', planTable(c), '', true);
   else if (tab === 'finance') {
-    body = '<div class="stats mb">' + stat('Registration fee charged', money(c.fin.charges)) + stat('Scholarship', money(c.fin.scholarship)) + stat('Amount paid', money(c.fin.paid), '', 'ok') + stat('Balance', money(c.fin.balance), c.fin.status, c.fin.balance > 0 ? 'warn' : 'ok') + '</div>' + panel('Payment history', table([{ h: 'Date', f: r => fdate(r.date) }, { h: 'Entry', f: r => ({ charge: 'Fee charged', scholarship: 'Scholarship', payment: 'Payment' }[r.type]) + sampleTag(r) }, { h: 'Amount', num: true, f: r => money(r.amount) }, { h: 'Method', f: r => esc(r.method || '') }, { h: 'Reference', f: r => esc(r.ref || '') }, { h: 'Note', f: r => esc(r.note || '') }, { h: '', cls: 'right', f: r => '<button class="btn sm" data-a="ledgerDel" data-id="' + r.id + '">Remove</button>' }], c.fin.rows, empty('No fee has been recorded for this student', 'Charge the registration fee to open the account.')), '<button class="btn sm" data-a="ledgerAdd" data-id="' + s.id + '" data-type="charge">Charge registration fee</button><button class="btn sm" data-a="ledgerAdd" data-id="' + s.id + '" data-type="scholarship">Add scholarship</button><button class="btn primary sm" data-a="ledgerAdd" data-id="' + s.id + '" data-type="payment">Record payment</button>', true);
+    body = '<div class="stats mb">' + stat('Registration fee charged', money(c.fin.charges)) + stat('Scholarship', money(c.fin.scholarship)) + stat('Amount paid', money(c.fin.paid), '', 'ok') + stat('Balance', money(c.fin.balance), c.fin.status, c.fin.balance > 0 ? 'warn' : 'ok') + '</div>' + panel('Payment history', table([{ h: 'Date', f: r => fdate(r.date) }, { h: 'Entry', f: r => ({ charge: 'Fee charged', scholarship: 'Scholarship', payment: 'Payment' }[r.type]) + sampleTag(r) }, { h: 'Amount', num: true, f: r => money(r.amount) }, { h: 'Method', f: r => esc(r.method || '') }, { h: 'Reference', f: r => esc(r.ref || '') }, { h: 'Note', f: r => esc(r.note || '') }, { h: '', cls: 'right', f: r => '<button class="btn sm" data-a="ledgerDel" data-id="' + r.id + '">Reverse</button>' }], c.fin.rows, empty('No fee has been recorded for this student', 'Charge the registration fee to open the account.')), '<button class="btn sm" data-a="ledgerAdd" data-id="' + s.id + '" data-type="charge">Charge registration fee</button><button class="btn sm" data-a="ledgerAdd" data-id="' + s.id + '" data-type="scholarship">Add scholarship</button><button class="btn primary sm" data-a="ledgerAdd" data-id="' + s.id + '" data-type="payment">Record payment</button>', true);
   } else if (tab === 'attendance') body = panel('Attendance this semester', table([{ h: 'Course', f: x => esc(x.sec.code + ' ' + course(x.sec.code).title) + sampleTag(x.sec) }, { h: 'Present', num: true, f: x => x.a.P }, { h: 'Late', num: true, f: x => x.a.L }, { h: 'Absent', num: true, f: x => x.a.A }, { h: 'Excused', num: true, f: x => x.a.E }, { h: 'Attendance', num: true, f: x => x.a.n ? badge(pct(x.a.rate), x.a.rate < st().warn.att ? 'bad' : 'ok') : '<span class="muted">No sessions yet</span>' }], c.cur.map(x => ({ sec: x.sec, a: attOf(s.id, x.sec.id) })), empty('Not registered for any class this semester')), '', true);
   else if (tab === 'warnings') body = panel('Alerts', table([{ h: 'Alert', f: w => badge(w.type, sevTone[w.severity]) }, { h: 'Reason', f: w => esc(w.reason) }, { h: 'Recommended action', f: w => esc(w.action) }, { h: 'Status', f: w => esc(w.status) }], ws, empty('No alerts for this student')), '<button class="btn sm" data-a="warnAdd" data-id="' + s.id + '">Add a concern</button><button class="btn primary sm" data-a="intAdd" data-id="' + s.id + '">Start an intervention</button>', true) + '<div class="mt">' + panel('Interventions', table([{ h: 'Date', f: r => fdate(r.date) }, { h: 'Type', f: r => esc(r.type) + sampleTag(r) }, { h: 'Plan', f: r => esc(r.plan) }, { h: 'Owner', f: r => esc(r.owner) }, { h: 'Follow-up', f: r => fdate(r.followUp) }, { h: 'Status', f: r => badge(r.status, r.status === 'Resolved' ? 'ok' : 'info') }], L.interventions.filter(i => i.studentId === s.id), empty('No interventions yet')), '', true) + '</div>';
   return head(nm(s), 'Student ID ' + esc(s.sid) + ', ' + esc(s.program) + ' (' + esc(s.degree) + ')', '<button class="btn" data-go="report" data-id="transcript" data-sid="' + s.id + '">Student report</button><button class="btn" data-a="viewAs" data-role="student" data-id="' + s.id + '">See their portal</button><button class="btn primary" data-a="stuEdit" data-id="' + s.id + '">Edit</button>', ['students', 'Students']) + tabs([['overview', 'Overview'], ['record', 'Academic record'], ['plan', 'Course plan'], ['finance', 'Fees'], ['attendance', 'Attendance'], ['warnings', 'Alerts and interventions']], tab) + body;
@@ -1153,8 +1154,9 @@ D.registration = () => {
   if (tab === 'requests') body = panel('Add and drop requests', table([{ h: 'Date', f: r => fdate(r.date) }, { h: 'Student', f: r => stuLink(byId('students', r.studentId)) }, { h: 'Request', f: r => badge(r.type === 'add' ? 'Add' : 'Drop', r.type === 'add' ? 'info' : 'warn') + ' ' + esc(r.code) + ' ' + esc(course(r.code).title) + sampleTag(r) }, { h: 'Check', f: r => { if (r.type !== 'add') return ''; const c = calc(r.studentId), miss = (course(r.code).prereqs || []).filter(p => !c.passed.has(p)); return miss.length ? badge('Needs ' + miss.join(', '), 'warn') : c.inProgCredits + course(r.code).credits > st().warn.maxCredits ? badge('Would exceed ' + st().warn.maxCredits + ' credits', 'warn') : badge('Prerequisites met', 'ok'); } }, { h: 'Note', f: r => esc(r.note || '') }, { h: 'Status', f: r => badge(r.status, r.status === 'Approved' ? 'ok' : r.status === 'Declined' ? 'bad' : 'info') }, { h: '', cls: 'right nowrap', f: r => r.status === 'Pending' ? '<button class="btn sm" data-a="reqDecide" data-id="' + r.id + '" data-v="Declined">Decline</button> <button class="btn sm primary" data-a="reqDecide" data-id="' + r.id + '" data-v="Approved">Approve</button>' : '' }], L.requests.slice().sort((a, b) => (a.status === 'Pending' ? 0 : 1) - (b.status === 'Pending' ? 0 : 1) || (b.date || '').localeCompare(a.date || '')), empty('No requests', 'Students request to add or drop a course from their portal.')), '<label class="check small"><input type="checkbox" data-ch="setFlag" data-k="addDropOpen"' + (st().addDropOpen ? ' checked' : '') + '> Add/drop is switched on for students</label><span class="small muted">' + addDropState() + ' ' + go('settings', 'Change dates', { tab: 'term' }) + '</span>', true);
   else if (tab === 'enrol') { const c = f.stu ? calc(f.stu) : null, avail = c ? secsNow().filter(s => !c.cur.some(x => x.sec.id === s.id && x.e.status === 'enrolled')) : [];
     body = '<div class="filters">' + sel('stu', stuOpts(), f.stu, 'Choose a student') + '</div>' + (c ? panel('Registered this semester: ' + c.inProgCredits + ' credits', table([{ h: 'Course', f: x => esc(x.sec.code + ' ' + course(x.sec.code).title) + sampleTag(x.sec) }, { h: 'Credits', num: true, f: x => course(x.sec.code).credits }, { h: 'Status', f: x => badge(x.e.status, x.e.status === 'enrolled' ? 'ok' : 'warn') }, { h: '', cls: 'right', f: x => x.e.status === 'enrolled' ? '<button class="btn sm" data-a="enrSet" data-id="' + x.e.id + '" data-v="dropped">Drop</button>' : '<button class="btn sm" data-a="enrSet" data-id="' + x.e.id + '" data-v="enrolled">Re-enrol</button>' }], c.cur, empty('Not registered for any course')), '', true) + '<div class="mt">' + panel('Add a course', table([{ h: 'Class', f: s => esc(s.code + ' ' + course(s.code).title) + sampleTag(s) }, { h: 'Credits', num: true, f: s => course(s.code).credits }, { h: 'Check', f: s => { const miss = (course(s.code).prereqs || []).filter(p => !c.passed.has(p)); return c.passed.has(s.code) ? badge('Already completed') : miss.length ? badge('Needs ' + miss.join(', '), 'warn') : badge('Prerequisites met', 'ok'); } }, { h: '', cls: 'right', f: s => '<button class="btn sm primary" data-a="enrDirect" data-s="' + c.s.id + '" data-id="' + s.id + '">Enrol</button>' }], avail, empty('No other classes this semester')), '', true) + '</div>' : empty('Choose a student', 'You can then register or drop courses for them.')); }
+  else if (tab === 'openings') body = openingsPanel();
   else { const miss = L.students.filter(s => s.status === 'Active' && !calc(s.id).cur.some(x => x.e.status === 'enrolled')); body = panel('Active students with no registration this semester', miss.length ? '<ul class="list">' + miss.map(s => '<li><div class="grow">' + stuLink(s) + '</div><button class="btn sm" data-go="registration" data-tab="enrol" data-stu="' + s.id + '">Register</button></li>').join('') + '</ul>' : empty('Every active student is registered'), '', true); }
-  return head('Registration', 'Review add/drop requests, register students, and see who has not registered for ' + esc(term().name) + '.', '<button class="btn" data-go="report" data-id="registration">Registration report</button>') + tabs([['requests', 'Requests'], ['enrol', 'Register a student'], ['missing', 'Not registered']], tab) + body;
+  return head('Registration', 'Review add/drop requests, register students, and see who has not registered for ' + esc(term().name) + '.', '<button class="btn" data-go="report" data-id="registration">Registration report</button>') + tabs([['requests', 'Requests'], ['enrol', 'Register a student'], ['openings', 'Course openings'], ['missing', 'Not registered']], tab) + body;
 };
 ACT.enrDirect = d => { enroll(d.s, d.id); toast('Enrolled'); render(); };
 ACT.reqDecide = d => { const r = byId('requests', d.id); r.status = d.v; r.decidedBy = who(); r.decidedAt = todayISO(); save('requests'); if (d.v === 'Approved') { if (r.type === 'add') enroll(r.studentId, r.sectionId); else { const e = S.enrollments.find(x => x.studentId === r.studentId && x.sectionId === r.sectionId); if (e) { e.status = 'dropped'; save('enrollments'); } } } log('Add/drop request ' + d.v.toLowerCase(), (byId('students', r.studentId) || {}).name + ' / ' + r.type + ' ' + r.code); toast('Request ' + d.v.toLowerCase()); render(); };
@@ -1999,6 +2001,106 @@ D.home = () => {
     return bar + _homeBeforeActions();
   };
 }
+
+/* ===== Course openings: the Department Head decides which courses students may add, for which group, and who teaches ===== */
+const GROUP_LABEL = { new: 'New (Year 1, Sem I)', middle: 'Middle (Year 1, Sem II)', upper: 'Upper (Year 2 and above)' };
+function cohortLabel(k) { return GROUP_LABEL[k] || ('Cohort ' + k); }
+function cohortKeys() { const k = ['new', 'middle', 'upper']; (L.students || []).forEach(x => { const c = String(x.cohort || '').trim(); if (c && !k.includes(c)) k.push(c); }); return k; }
+function openingsPanel() {
+  const secs = (L.sections || []).filter(s => !s.term || s.term === term().id).slice().sort((a, b) => String(a.code).localeCompare(String(b.code)));
+  const dupes = []; secs.forEach((a, i) => secs.forEach((b, j) => { if (j > i && a.code === b.code && a.enrollOpen && b.enrollOpen && (a.groups || []).some(g => (b.groups || []).includes(g))) dupes.push(a.code); }));
+  const warn = dupes.length ? '<p class="small" style="color:#9a3412"><b>Check:</b> two open classes for ' + esc([...new Set(dupes)].join(', ')) + ' share a cohort. Students will be refused until only one is open for that cohort.</p>' : '';
+  return panel('Course openings for ' + term().name, '<p class="small muted">Students can add only the courses that are open here, and only if their cohort is allowed. Each course has one class per cohort, so everyone in a cohort gets the same teacher, day and time. The director can open or close any course at any time, including English courses for new students. Changes take effect straight away.</p>' + warn + table([
+    { h: 'Course', f: s => esc(s.code + ' ' + course(s.code).title) + sampleTag(s) },
+    { h: 'Teacher', f: s => { const t = byId('teachers', s.teacherId); return t ? esc(t.name) : '<span class="muted">Not assigned</span>'; } },
+    { h: 'Cohorts allowed', f: s => (s.groups || []).map(g => badge(cohortLabel(g), 'info')).join(' ') || '<span class="muted">None</span>' },
+    { h: 'Students can add', f: s => s.enrollOpen ? badge('Open', 'ok') : badge('Closed', 'warn') },
+    { h: '', cls: 'right', f: s => '<button class="btn sm" data-a="openEdit" data-id="' + esc(s.id) + '">Change</button> <button class="btn sm" data-a="groupEnrol" data-id="' + esc(s.id) + '">Enrol whole cohort</button>' }
+  ], secs, empty('No classes for this semester')), '', true);
+}
+ACT.openEdit = d => {
+  const s = byId('sections', d.id); if (!s) return;
+  const teachers = L.teachers.filter(t => t.id !== 't-R' && t.id !== 't-tbd').map(t => [t.id, t.name]);
+  openForm({ title: 'Course opening: ' + s.code, intro: 'Choose whether students can add this course, which cohorts may take it, and who teaches it. Give each cohort one class per course.', fields: [
+    { k: 'enrollOpen', label: 'Students can add this course', type: 'select', options: [['true', 'Open'], ['false', 'Closed']], blank: false },
+    { k: 'groups', label: 'Cohorts allowed', type: 'multi', options: cohortKeys().map(k => [k, cohortLabel(k)]) },
+    { k: 'teacherId', label: 'Teacher', type: 'select', options: [['', 'Not assigned']].concat(teachers), blank: false }
+  ], values: { enrollOpen: s.enrollOpen ? 'true' : 'false', groups: s.groups || [], teacherId: s.teacherId || '' },
+  onSave: v => {
+    upd('sections', s.id, { enrollOpen: v.enrollOpen === 'true', groups: v.groups || [], teacherId: v.teacherId || '' });
+    log('Course opening changed', s.code, '', (v.enrollOpen === 'true' ? 'open' : 'closed') + ' for ' + ((v.groups || []).join(', ') || 'no group'));
+    if (v.enrollOpen === 'true' && (v.groups || []).length) notifyStudents(groupPids(v.groups), 'Course open for registration', s.code + ' ' + course(s.code).title + ' is now open to add in your portal.');
+    toast('Saved.');
+  } });
+};
+
+/* ===== Build 5: phone notifications, whole-group enrolment, reversals for financial entries ===== */
+const VAPID_PUBLIC = 'BMpoNhrVN4eeHBw8FNICMD7meDy_CpQrtoCD3cjJibRpbb8iMR1cz98_bLJm8n2VYloKMcFqn77fwzWU4s_nB1I';
+function urlB64ToU8(b64) { const pad = '='.repeat((4 - b64.length % 4) % 4), raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(raw, c => c.charCodeAt(0)); }
+function groupOf(s) { const y = Number(s.year), m = Number(s.sem); return y === 1 && m === 1 ? 'new' : y === 1 ? 'middle' : 'upper'; }
+function cohortOf(s) { const c = String(s.cohort || '').trim(); return c || groupOf(s); }
+function groupPids(groups) { return L.students.filter(s => s.status === 'Active' && (groups || []).includes(cohortOf(s))).map(s => s.id); }
+async function pushCall(o) {
+  const base = String(CFG.url || '').replace(/\/+$/, ''), h = { 'Content-Type': 'application/json' };
+  if (CFG.key) { h.apikey = CFG.key; if (/^eyJ/.test(CFG.key)) h.Authorization = 'Bearer ' + CFG.key; }
+  try {
+    const res = await fetch(base + '/functions/v1/push-send', { method: 'POST', headers: h, body: JSON.stringify({ t: TOKEN, title: o.title, body: o.body, url: './', everyone: !!o.everyone, pids: o.pids || [] }) });
+    return res.status === 404 ? { error: 'notdeployed' } : await res.json().catch(() => ({ error: 'notdeployed' }));
+  } catch (e) { return { error: 'network' }; }
+}
+function notifyStudents(pids, title, body) { // pids === null means every student
+  if (!ME || ME.role !== 'director') return;
+  pushCall({ title, body: String(body || '').slice(0, 200), everyone: pids === null, pids: pids || [] }).then(r => { if (r.ok) toast('Phone notifications sent to ' + r.sent + ' student(s).'); });
+}
+const PUSH_OK = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+function pushBanner() {
+  if (!ME || ME.role !== 'student') return '';
+  if (!PUSH_OK()) return panel('Phone notifications', '<p class="small muted">To get announcements on your phone, open this site in Chrome or Safari, choose Share, then Add to Home Screen. Open the app from your home screen and turn notifications on.</p>');
+  if (Notification.permission === 'denied') return panel('Phone notifications', '<p class="small muted">Notifications are blocked on this phone. Turn them on in your phone’s settings for this site.</p>');
+  let on = false; try { on = localStorage.getItem('aiist:push') === '1'; } catch (e) { }
+  if (on && Notification.permission === 'granted') return '';
+  return panel('Phone notifications', '<p class="small">Get a notification when the department posts an announcement, an update, or a course you can register for.</p><button class="btn primary" data-a="pushOn">Turn on notifications</button>');
+}
+const _spHomeBeforePush = PG.student.home;
+PG.student.home = () => pushBanner() + _spHomeBeforePush();
+ACT.pushOn = async () => {
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { toast('Notifications are off. You can turn them on in your phone settings.'); render(); return; }
+    const reg = await navigator.serviceWorker.register('./sw.js');
+    await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToU8(VAPID_PUBLIC) });
+    const r = await api('aiist_push_save', { t: TOKEN, sub: sub.toJSON() });
+    if (r.ok) { try { localStorage.setItem('aiist:push', '1'); } catch (e) { } toast('Notifications are on for this phone.'); } else toast('Could not turn notifications on. Please try again.');
+  } catch (e) { toast('Notifications could not start on this phone. Add the site to your home screen first.'); }
+  render();
+};
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => { });
+
+/* Whole-group enrolment: every active student in the allowed groups goes into the same class */
+ACT.groupEnrol = d => {
+  const s = byId('sections', d.id); if (!s) return;
+  const pids = groupPids(s.groups || []).filter(id => !(S.enrollments || []).some(e => e.studentId === id && e.sectionId === s.id && e.status === 'enrolled'));
+  if (!pids.length) { toast('Everyone in the allowed groups is already enrolled.'); return; }
+  confirmBox('Enrol the whole group?', 'Add ' + pids.length + ' student(s) to ' + esc(s.code) + '. Everyone is placed in the same class, with the same teacher, room and time.', 'Enrol', () => {
+    pids.forEach(id => enroll(id, s.id));
+    log('Enrolled a whole group', s.code, '', pids.length + ' students');
+    notifyStudents(pids, 'Course added', s.code + ' ' + course(s.code).title + ' is on your schedule.');
+    toast(pids.length + ' students enrolled.');
+  });
+};
+
+/* Financial entries are never deleted: a reversal cancels them and stays in the record */
+ACT.ledgerDel = d => {
+  const r = byId('ledger', d.id); if (!r) return;
+  confirmBox('Reverse this entry?', 'The original entry stays in the record. A reversal cancels it in the balance and is noted in the audit log.', 'Reverse', () => {
+    add('ledger', { id: uid('lg'), studentId: r.studentId, type: r.type, amount: -Number(r.amount || 0), term: r.term, date: todayISO(), note: 'Reversal of ' + (r.date || '') + ' ' + (r.note || r.type), reversalOf: r.id });
+    log('Reversed financial entry', (byId('students', r.studentId) || {}).name + ': ' + r.type, money(r.amount), '');
+    toast('Reversal posted.');
+  }, true);
+};
+
 /* ===== Build 3: appeals and advising, two-step sign-in, email sending ===== */
 let mfaStep = false, mfaSecretB32 = '';
 const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -2316,6 +2418,7 @@ ACT.sendMail = () => {
       if (!picked.length) { toast('Choose at least one student.'); return; }
       const mails = [...new Set(picked.map(id => String((byId('students', id) || {}).email || '').trim().toLowerCase()).filter(e => EMAIL_RE.test(e)))];
       if (v.channel !== 'Email only') add('announcements', { title: v.subject, body: v.body, audience: v.mode === 'All students' ? 'All students' : 'Selected students', toStudents: picked, date: todayISO(), author: st().director.name });
+      if (v.channel !== 'Email only') notifyStudents(v.mode === 'All students' ? null : picked, v.subject, v.body);
       log('Sent a message', v.subject, '', picked.length + ' students, ' + v.channel);
       if (v.channel === 'Portal only') { toast('Posted to the student portal.'); return; }
       if (!mails.length) { toast('None of these students has a valid email address on file.'); return; }
